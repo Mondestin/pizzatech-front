@@ -8,10 +8,10 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 const Cart = () => {
-  const { items, updateQuantity, removeFromCart, clearCart, getTotalPrice } = useCart();
+  const { cartItems, updateQuantity, removeFromCart, clearCart, getTotalPrice } = useCart();
 
   const handleCheckout = () => {
-    if (items.length === 0) {
+    if (cartItems.length === 0) {
       toast({
         title: "Panier vide",
         description: "Veuillez ajouter des articles à votre panier avant de passer commande.",
@@ -27,7 +27,7 @@ const Cart = () => {
     clearCart();
   };
 
-  if (items.length === 0) {
+  if (cartItems.length === 0) {
     return (
       <>
         <Header />
@@ -73,7 +73,7 @@ const Cart = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {items.map((item) => (
+                    {cartItems.map((item) => (
                       <div key={item.id} className="flex items-center gap-4 py-4 border-b last:border-0">
                         <img
                           src={item.image}
@@ -129,7 +129,7 @@ const Cart = () => {
                   <div className="space-y-4">
                     <div className="flex justify-between">
                       <span>Sous-total</span>
-                      <span>{getTotalPrice()} €</span>
+                      <span>{getTotalPrice().toFixed(2)} €</span>
                     </div>
                     <div className="flex justify-between">
                       <span>TVA (20%)</span>
