@@ -3,6 +3,7 @@ const API_URL = 'http://localhost:8000';
 
 export interface RegisterData {
   email: string;
+  full_name: string;
   password: string;
 }
 

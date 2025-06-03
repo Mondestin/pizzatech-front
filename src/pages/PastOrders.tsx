@@ -1,85 +1,59 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Calendar, MapPin, Clock, ShoppingBag } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowLeft, User, Mail, Clock, MapPin } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 const PastOrders = () => {
+  const { token } = useAuth();
+
   // Mock data for past orders
-  const [orders] = useState([
+  const pastOrders = [
     {
-      id: "CMD-001",
-      date: "2024-06-01",
-      time: "18:30",
-      status: "Livrée",
-      total: 42.97,
-      deliveryAddress: "123 Rue de la Pizza, 75001 Paris",
+      id: "1",
+      date: "2024-03-15",
+      time: "19:30",
+      status: "Livré",
+      total: 45.99,
+      deliveryAddress: "123 Rue de la Paix, 75001 Paris",
       items: [
-        { name: "Margherita", quantity: 2, price: 16.99 },
-        { name: "Pepperoni", quantity: 1, price: 18.99 }
-      ]
+        { name: "Margherita", quantity: 2, price: 12.99 },
+        { name: "Coca-Cola", quantity: 1, price: 3.99 },
+      ],
     },
-    {
-      id: "CMD-002",
-      date: "2024-05-28",
-      time: "19:15",
-      status: "Livrée",
-      total: 26.99,
-      deliveryAddress: "123 Rue de la Pizza, 75001 Paris",
-      items: [
-        { name: "Truffe Deluxe", quantity: 1, price: 26.99 }
-      ]
-    },
-    {
-      id: "CMD-003",
-      date: "2024-05-20",
-      time: "20:00",
-      status: "Livrée",
-      total: 65.96,
-      deliveryAddress: "123 Rue de la Pizza, 75001 Paris",
-      items: [
-        { name: "Poulet BBQ", quantity: 2, price: 21.99 },
-        { name: "Méditerranéenne", quantity: 1, price: 19.99 },
-        { name: "Pain à l'Ail", quantity: 1, price: 7.99 }
-      ]
-    },
-    {
-      id: "CMD-004",
-      date: "2024-05-15",
-      time: "17:45",
-      status: "Annulée",
-      total: 23.99,
-      deliveryAddress: "123 Rue de la Pizza, 75001 Paris",
-      items: [
-        { name: "Quattro Stagioni", quantity: 1, price: 23.99 }
-      ]
-    }
-  ]);
+    // Add more mock orders as needed
+  ];
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Livrée":
-        return "bg-green-100 text-green-800";
-      case "Annulée":
-        return "bg-red-100 text-red-800";
-      case "En Cours":
-        return "bg-blue-100 text-blue-800";
+    switch (status.toLowerCase()) {
+      case "livré":
+        return "text-green-600";
+      case "en cours":
+        return "text-yellow-600";
+      case "annulé":
+        return "text-red-600";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "text-gray-600";
     }
   };
 
-  if (orders.length === 0) {
+  // Mock user data - in a real app, this would come from the API
+  const userData = {
+    email: "user@example.com",
+    full_name: "Mondes Myss",
+    address: "123 Rue de la Paix, 75001 Paris",
+    phone: "+33 1 23 45 67 89",
+  };
+
+  if (pastOrders.length === 0) {
     return (
       <>
         <Header />
         <div className="min-h-screen bg-gray-50 py-16">
           <div className="container mx-auto px-4">
             <div className="text-center">
-              <ShoppingBag className="h-16 w-16 mx-auto text-gray-400 mb-4" />
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Aucune Commande</h2>
               <p className="text-gray-600 mb-8">
                 Vous n'avez pas encore passé de commande.
@@ -109,79 +83,82 @@ const PastOrders = () => {
             </Link>
           </div>
 
-          <div className="text-center mb-16">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              Historique des Commandes
-            </h1>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Consultez l'historique de vos commandes passées et leur statut.
-            </p>
-          </div>
-
-          <div className="space-y-6">
-            {orders.map((order) => (
-              <Card key={order.id} className="hover:shadow-md transition-shadow">
+          <div className="grid lg:grid-cols-3 gap-8">
+            {/* User Profile */}
+            <div>
+              <Card>
                 <CardHeader>
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                      <CardTitle className="text-lg">Commande #{order.id}</CardTitle>
-                      <div className="flex items-center space-x-4 text-sm text-gray-600 mt-2">
-                        <div className="flex items-center space-x-1">
-                          <Calendar className="h-4 w-4" />
-                          <span>{order.date}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <Clock className="h-4 w-4" />
-                          <span>{order.time}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                      <Badge className={getStatusColor(order.status)}>
-                        {order.status}
-                      </Badge>
-                      <span className="text-xl font-bold text-red-600">
-                        {order.total.toFixed(2)} €
-                      </span>
-                    </div>
-                  </div>
+                  <CardTitle className="flex items-center">
+                    <User className="h-5 w-5 mr-2" />
+                    Mon Profil
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="flex items-start space-x-2">
-                      <MapPin className="h-4 w-4 text-gray-500 mt-0.5" />
-                      <span className="text-sm text-gray-600">{order.deliveryAddress}</span>
+                    <div className="flex items-center">
+                      <Mail className="h-4 w-4 mr-2 text-gray-500" />
+                      <span className="text-gray-700">{userData.email}</span>
                     </div>
-                    
-                    <div>
-                      <h4 className="font-medium mb-2">Articles Commandés :</h4>
-                      <div className="space-y-2">
-                        {order.items.map((item, index) => (
-                          <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
-                            <div>
-                              <span className="font-medium">{item.name}</span>
-                              <span className="text-gray-600 ml-2">x{item.quantity}</span>
-                            </div>
-                            <span className="font-medium">{(item.price * item.quantity).toFixed(2)} €</span>
-                          </div>
-                        ))}
-                      </div>
+                    <div className="flex items-center">
+                      <User className="h-4 w-4 mr-2 text-gray-500" />
+                      <span className="text-gray-700">{userData.full_name}</span>
                     </div>
-
-                    <div className="flex flex-col sm:flex-row gap-2 pt-4">
-                      <Button variant="outline" className="flex-1">
-                        Voir les Détails
-                      </Button>
-                      {order.status === "Livrée" && (
-                        <Button className="flex-1 bg-red-600 hover:bg-red-700">
-                          Commander à Nouveau
-                        </Button>
-                      )}
+                    <div className="flex items-center">
+                      <MapPin className="h-4 w-4 mr-2 text-gray-500" />
+                      <span className="text-gray-700">{userData.address}</span>
                     </div>
+                    <div className="flex items-center">
+                      <Clock className="h-4 w-4 mr-2 text-gray-500" />
+                      <span className="text-gray-700">{userData.phone}</span>
+                    </div>
+                    <Button variant="outline" className="w-full">
+                      Modifier le Profil
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
-            ))}
+            </div>
+
+            {/* Past Orders */}
+            <div className="lg:col-span-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Mes Commandes</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    {pastOrders.map((order) => (
+                      <div key={order.id} className="border-b last:border-0 pb-6 last:pb-0">
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <p className="text-sm text-gray-500">
+                              Commande #{order.id} • {order.date} à {order.time}
+                            </p>
+                            <p className={`font-medium ${getStatusColor(order.status)}`}>
+                              {order.status}
+                            </p>
+                          </div>
+                          <p className="font-bold">{order.total.toFixed(2)} €</p>
+                        </div>
+                        <div className="space-y-2">
+                          <p className="text-sm text-gray-500">{order.deliveryAddress}</p>
+                          <div className="space-y-1">
+                            {order.items.map((item, index) => (
+                              <p key={index} className="text-sm">
+                                {item.quantity}x {item.name} - {item.price.toFixed(2)} €
+                              </p>
+                            ))}
+                          </div>
+                        </div>
+                        <Button variant="outline" className="mt-4">
+                          Commander à Nouveau
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </div>

@@ -13,31 +13,31 @@ const Header = () => {
 
   // Navigation items in French
   const navItems = [
-    { name: "Accueil", href: "#home" },
-    { name: "À propos", href: "#about" },
-    { name: "Menu", href: "#menu" },
-    { name: "Contact", href: "#contact" },
+    { name: "Accueil", href: "/" },
+    { name: "Menu", href: "/menu" },
+    { name: "À propos", href: "/#about" },
+    { name: "Contact", href: "/#contact" },
   ];
 
   return (
     <header className="fixed top-0 w-full bg-white/95 backdrop-blur-sm shadow-sm z-50">
       <div className="container mx-auto px-4 lg:px-6 h-16 flex items-center justify-between">
         {/* Logo */}
-        <div className="flex items-center space-x-2">
+        <Link to="/" className="flex items-center space-x-2">
           <Pizza className="h-8 w-8 text-red-600" />
           <span className="text-2xl font-bold text-gray-900">Bella Pizza Paris</span>
-        </div>
+        </Link>
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-8">
           {navItems.map((item) => (
-            <a
+            <Link
               key={item.name}
-              href={item.href}
+              to={item.href}
               className="text-gray-700 hover:text-red-600 transition-colors font-medium"
             >
               {item.name}
-            </a>
+            </Link>
           ))}
           <div className="flex items-center space-x-4">
             {isAuthenticated ? (
@@ -87,14 +87,14 @@ const Header = () => {
           <SheetContent side="right" className="w-[300px]">
             <div className="flex flex-col space-y-6 mt-8">
               {navItems.map((item) => (
-                <a
+                <Link
                   key={item.name}
-                  href={item.href}
+                  to={item.href}
                   className="text-lg font-medium text-gray-700 hover:text-red-600 transition-colors"
                   onClick={() => setIsOpen(false)}
                 >
                   {item.name}
-                </a>
+                </Link>
               ))}
               <div className="flex flex-col space-y-4">
                 {isAuthenticated ? (
