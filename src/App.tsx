@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { CartProvider } from "@/contexts/CartContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import FullMenu from "./pages/FullMenu";
 import Cart from "./pages/Cart";
@@ -26,7 +27,14 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/menu" element={<FullMenu />} />
               <Route path="/cart" element={<Cart />} />
-              <Route path="/orders" element={<PastOrders />} />
+              <Route 
+                path="/orders" 
+                element={
+                  <ProtectedRoute>
+                    <PastOrders />
+                  </ProtectedRoute>
+                } 
+              />
               <Route path="/register" element={<Register />} />
               <Route path="/login" element={<Login />} />
               <Route path="/admin" element={<AdminDashboard />} />

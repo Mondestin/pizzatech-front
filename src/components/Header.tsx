@@ -2,12 +2,14 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, Pizza, ShoppingCart } from "lucide-react";
+import { Menu, Pizza, ShoppingCart, LogOut } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { getItemCount } = useCart();
+  const { isAuthenticated, logout } = useAuth();
 
   // Navigation items in French
   const navItems = [
@@ -38,11 +40,30 @@ const Header = () => {
             </a>
           ))}
           <div className="flex items-center space-x-4">
-            <Link to="/orders">
-              <Button variant="ghost" className="text-gray-700 hover:text-red-600">
-                Commandes
-              </Button>
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <Link to="/orders" className="text-gray-700 hover:text-red-600">
+                  Mes Commandes
+                </Link>
+                <Button
+                  variant="ghost"
+                  onClick={logout}
+                  className="text-gray-700 hover:text-red-600"
+                >
+                  <LogOut className="h-5 w-5 mr-2" />
+                  Déconnexion
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="text-gray-700 hover:text-red-600">
+                  Connexion
+                </Link>
+                <Link to="/register" className="text-gray-700 hover:text-red-600">
+                  Inscription
+                </Link>
+              </>
+            )}
             <Link to="/cart">
               <Button variant="ghost" className="text-gray-700 hover:text-red-600 relative">
                 <ShoppingCart className="h-5 w-5" />
@@ -52,14 +73,6 @@ const Header = () => {
                   </span>
                 )}
               </Button>
-            </Link>
-            <Link to="/login">
-              <Button variant="ghost" className="text-gray-700 hover:text-red-600">
-                Connexion
-              </Button>
-            </Link>
-            <Link to="/register">
-              <Button className="bg-red-600 hover:bg-red-700">S'inscrire</Button>
             </Link>
           </div>
         </nav>
@@ -84,11 +97,36 @@ const Header = () => {
                 </a>
               ))}
               <div className="flex flex-col space-y-4">
-                <Link to="/orders" onClick={() => setIsOpen(false)}>
-                  <Button variant="ghost" className="w-full text-gray-700 hover:text-red-600 justify-start">
-                    Commandes
-                  </Button>
-                </Link>
+                {isAuthenticated ? (
+                  <>
+                    <Link to="/orders" onClick={() => setIsOpen(false)}>
+                      <Button variant="ghost" className="w-full text-gray-700 hover:text-red-600 justify-start">
+                        Mes Commandes
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="ghost"
+                      onClick={logout}
+                      className="w-full text-gray-700 hover:text-red-600 justify-start"
+                    >
+                      <LogOut className="h-5 w-5 mr-2" />
+                      Déconnexion
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Link to="/login" onClick={() => setIsOpen(false)}>
+                      <Button variant="ghost" className="w-full text-gray-700 hover:text-red-600">
+                        Connexion
+                      </Button>
+                    </Link>
+                    <Link to="/register" onClick={() => setIsOpen(false)}>
+                      <Button className="bg-red-600 hover:bg-red-700 w-full">
+                        Inscription
+                      </Button>
+                    </Link>
+                  </>
+                )}
                 <Link to="/cart" onClick={() => setIsOpen(false)}>
                   <Button variant="ghost" className="w-full text-gray-700 hover:text-red-600 justify-start relative">
                     <ShoppingCart className="h-5 w-5 mr-2" />
@@ -98,16 +136,6 @@ const Header = () => {
                         {getItemCount()}
                       </span>
                     )}
-                  </Button>
-                </Link>
-                <Link to="/login" onClick={() => setIsOpen(false)}>
-                  <Button variant="ghost" className="w-full text-gray-700 hover:text-red-600">
-                    Connexion
-                  </Button>
-                </Link>
-                <Link to="/register" onClick={() => setIsOpen(false)}>
-                  <Button className="bg-red-600 hover:bg-red-700 w-full">
-                    S'inscrire
                   </Button>
                 </Link>
               </div>
