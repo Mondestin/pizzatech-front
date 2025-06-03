@@ -45,7 +45,7 @@ const Menu = () => {
       id: pizza.id,
       name: pizza.name,
       description: pizza.description,
-      price: `${pizza.price.toFixed(2)} €`,
+      price: pizza.price,
       image: pizza.image_url,
       quantity: 1
     };

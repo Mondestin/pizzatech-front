@@ -1,53 +1,109 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, User, Mail, Clock, MapPin } from "lucide-react";
+import { ArrowLeft, User, Mail, MapPin, Phone, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { getUserProfile, UserData } from "@/services/userService";
+import { getOrders, Order } from "@/services/orderService";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 const PastOrders = () => {
-  const { token } = useAuth();
+  const { isAuthenticated } = useAuth();
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock data for past orders
-  const pastOrders = [
-    {
-      id: "1",
-      date: "2024-03-15",
-      time: "19:30",
-      status: "Livré",
-      total: 45.99,
-      deliveryAddress: "123 Rue de la Paix, 75001 Paris",
-      items: [
-        { name: "Margherita", quantity: 2, price: 12.99 },
-        { name: "Coca-Cola", quantity: 1, price: 3.99 },
-      ],
-    },
-    // Add more mock orders as needed
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [userData, ordersData] = await Promise.all([
+          getUserProfile(),
+          getOrders()
+        ]);
+        setUserData(userData);
+        setOrders(ordersData);
+        setError(null);
+      } catch (err) {
+        setError("Erreur lors du chargement des données. Veuillez réessayer plus tard.");
+        console.error("Error fetching data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (isAuthenticated) {
+      fetchData();
+    }
+  }, [isAuthenticated]);
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case "livré":
-        return "text-green-600";
-      case "en cours":
-        return "text-yellow-600";
-      case "annulé":
-        return "text-red-600";
+      case "completed":
+        return "bg-green-100 text-green-800";
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "cancelled":
+        return "bg-red-100 text-red-800";
       default:
-        return "text-gray-600";
+        return "bg-gray-100 text-gray-800";
     }
   };
 
-  // Mock user data - in a real app, this would come from the API
-  const userData = {
-    email: "user@example.com",
-    full_name: "Mondes Myss",
-    address: "123 Rue de la Paix, 75001 Paris",
-    phone: "+33 1 23 45 67 89",
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('fr-FR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Europe/Paris'
+    });
   };
 
-  if (pastOrders.length === 0) {
+  if (loading) {
+    return (
+      <>
+        <Header />
+        <div className="min-h-screen bg-gray-50 py-16">
+          <div className="container mx-auto px-4">
+            <div className="text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto text-red-600" />
+              <p className="mt-4 text-gray-600">Chargement des données...</p>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
+
+  if (error) {
+    return (
+      <>
+        <Header />
+        <div className="min-h-screen bg-gray-50 py-16">
+          <div className="container mx-auto px-4">
+            <div className="text-center">
+              <p className="text-red-600">{error}</p>
+              <Button 
+                onClick={() => window.location.reload()} 
+                className="mt-4 bg-red-600 hover:bg-red-700"
+              >
+                Réessayer
+              </Button>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
+
+  if (orders.length === 0) {
     return (
       <>
         <Header />
@@ -84,78 +140,71 @@ const PastOrders = () => {
           </div>
 
           <div className="grid lg:grid-cols-3 gap-8">
-            {/* User Profile */}
-            <div>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <User className="h-5 w-5 mr-2" />
-                    Mon Profil
-                  </CardTitle>
+            {/* Past Orders */}
+            <div className="lg:col-span-2">
+              <Card className="border-none shadow-lg">
+                <CardHeader className="bg-white border-b">
+                  <CardTitle className="text-xl font-bold text-gray-900">Mes Commandes</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center">
-                      <Mail className="h-4 w-4 mr-2 text-gray-500" />
-                      <span className="text-gray-700">{userData.email}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <User className="h-4 w-4 mr-2 text-gray-500" />
-                      <span className="text-gray-700">{userData.full_name}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <MapPin className="h-4 w-4 mr-2 text-gray-500" />
-                      <span className="text-gray-700">{userData.address}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Clock className="h-4 w-4 mr-2 text-gray-500" />
-                      <span className="text-gray-700">{userData.phone}</span>
-                    </div>
-                    <Button variant="outline" className="w-full">
-                      Modifier le Profil
-                    </Button>
+                <CardContent className="p-6">
+                  <div className="space-y-6">
+                    {orders.map((order) => (
+                      <div key={order.id} className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <p className="text-sm text-gray-500">
+                              Commande #{order.id} • {formatDate(order.order_date)}
+                            </p>
+                            <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium mt-2 ${getStatusColor(order.status)}`}>
+                              {order.status}
+                            </span>
+                          </div>
+                          <p className="font-bold text-lg text-gray-900">{order.total_price.toFixed(2)} €</p>
+                        </div>
+                        <div className="space-y-3 pt-3 border-t border-gray-100">
+                          {order.items.map((item) => (
+                            <div key={item.id} className="flex justify-between items-center">
+                              <div>
+                                <p className="text-sm font-medium text-gray-900">{item.pizza.name}</p>
+                                <p className="text-xs text-gray-500">
+                                  {item.quantity}x • {item.price.toFixed(2)} €
+                                </p>
+                              </div>
+                              <p className="text-sm font-medium text-gray-900">
+                                {(item.price * item.quantity).toFixed(2)} €
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Past Orders */}
-            <div className="lg:col-span-2">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Mes Commandes</CardTitle>
+            {/* User Profile Section */}
+            <div>
+              <Card className="border-none shadow-lg">
+                <CardHeader className="bg-white border-b">
+                  <CardTitle className="text-xl font-bold text-gray-900">Profil Utilisateur</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-6">
-                    {pastOrders.map((order) => (
-                      <div key={order.id} className="border-b last:border-0 pb-6 last:pb-0">
-                        <div className="flex justify-between items-start mb-4">
-                          <div>
-                            <p className="text-sm text-gray-500">
-                              Commande #{order.id} • {order.date} à {order.time}
-                            </p>
-                            <p className={`font-medium ${getStatusColor(order.status)}`}>
-                              {order.status}
-                            </p>
-                          </div>
-                          <p className="font-bold">{order.total.toFixed(2)} €</p>
-                        </div>
-                        <div className="space-y-2">
-                          <p className="text-sm text-gray-500">{order.deliveryAddress}</p>
-                          <div className="space-y-1">
-                            {order.items.map((item, index) => (
-                              <p key={index} className="text-sm">
-                                {item.quantity}x {item.name} - {item.price.toFixed(2)} €
-                              </p>
-                            ))}
-                          </div>
-                        </div>
-                        <Button variant="outline" className="mt-4">
-                          Commander à Nouveau
-                        </Button>
+                <CardContent className="p-6">
+                  {userData && (
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                        <User className="h-5 w-5 text-red-600" />
+                        <span className="text-gray-900">{userData.full_name}</span>
                       </div>
-                    ))}
-                  </div>
+                      <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                        <Mail className="h-5 w-5 text-red-600" />
+                        <span className="text-gray-900">{userData.email}</span>
+                      </div>
+                      <Button variant="outline" className="w-full mt-4 border-red-600 text-red-600 hover:bg-red-600 hover:text-white">
+                        Modifier le Profil
+                      </Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>

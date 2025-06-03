@@ -33,7 +33,7 @@ const Register = () => {
 
     try {
       setIsLoading(true);
-      await register({ email, full_name: fullName, password });
+      await register(email, fullName, password);
       navigate("/"); // Redirect to home page after successful registration
     } catch (error) {
       // Error is already handled in the auth context

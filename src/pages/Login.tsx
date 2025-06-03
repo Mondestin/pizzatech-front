@@ -20,7 +20,7 @@ const Login = () => {
     e.preventDefault();
     try {
       setIsLoading(true);
-      await login({ username: email, password });
+      await login(email, password);
       navigate("/"); // Redirect to home page after successful login
     } catch (error) {
       // Error is already handled in the auth context

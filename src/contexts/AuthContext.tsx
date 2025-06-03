@@ -1,75 +1,41 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
-import { register as registerUser, login as loginUser, RegisterData, LoginData, AuthResponse } from '@/services/authService';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { login as loginService, register as registerService, logout as logoutService } from '@/services/authService';
 import { toast } from '@/hooks/use-toast';
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  token: string | null;
-  register: (data: RegisterData) => Promise<void>;
-  login: (data: LoginData) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  register: (email: string, full_name: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!token);
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
-  const register = async (data: RegisterData) => {
-    try {
-      const response: AuthResponse = await registerUser(data);
-      setToken(response.access_token);
-      setIsAuthenticated(true);
-      localStorage.setItem('token', response.access_token);
-      
-      toast({
-        title: "Inscription réussie",
-        description: "Votre compte a été créé avec succès.",
-      });
-    } catch (error) {
-      toast({
-        title: "Erreur d'inscription",
-        description: error instanceof Error ? error.message : "Une erreur est survenue lors de l'inscription",
-        variant: "destructive",
-      });
-      throw error;
-    }
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    setIsAuthenticated(!!token);
+  }, []);
+
+  const login = async (email: string, password: string) => {
+    await loginService(email, password);
+    setIsAuthenticated(true);
   };
 
-  const login = async (data: LoginData) => {
-    try {
-      const response: AuthResponse = await loginUser(data);
-      setToken(response.access_token);
-      setIsAuthenticated(true);
-      localStorage.setItem('token', response.access_token);
-      
-      toast({
-        title: "Connexion réussie",
-        description: "Vous êtes maintenant connecté.",
-      });
-    } catch (error) {
-      toast({
-        title: "Erreur de connexion",
-        description: error instanceof Error ? error.message : "Une erreur est survenue lors de la connexion",
-        variant: "destructive",
-      });
-      throw error;
-    }
+  const register = async (email: string, full_name: string, password: string) => {
+    await registerService({ email, full_name, password });
+    setIsAuthenticated(true);
   };
 
   const logout = () => {
-    setToken(null);
+    logoutService();
     setIsAuthenticated(false);
-    localStorage.removeItem('token');
-    toast({
-      title: "Déconnexion",
-      description: "Vous avez été déconnecté avec succès.",
-    });
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, token, register, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

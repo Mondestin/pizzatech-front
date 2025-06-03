@@ -29,9 +29,12 @@ const Cart = () => {
 
     try {
       setIsLoading(true);
+      console.log('Starting checkout process with cart items:', cartItems);
+
       const orderData = {
         status: "pending",
         total_price: getTotalPrice(),
+        order_date: new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Paris' }),
         items: cartItems.map(item => ({
           pizza_id: item.id,
           quantity: item.quantity,
@@ -39,7 +42,16 @@ const Cart = () => {
         }))
       };
 
-      await createOrder(orderData);
+      console.log('Prepared order data:', {
+        status: orderData.status,
+        total_price: orderData.total_price,
+        items_count: orderData.items.length,
+        items: orderData.items
+      });
+
+      const order = await createOrder(orderData);
+      console.log('Order created:', order);
+
       clearCart();
       toast({
         title: "Commande réussie",
@@ -47,6 +59,7 @@ const Cart = () => {
       });
       navigate("/orders");
     } catch (error) {
+      console.error('Checkout failed:', error);
       toast({
         title: "Erreur",
         description: error instanceof Error ? error.message : "Une erreur est survenue lors de la commande",

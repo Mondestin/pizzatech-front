@@ -17,12 +17,12 @@ export interface AuthResponse {
   token_type: string;
 }
 
-export const register = async (data: RegisterData): Promise<AuthResponse> => {
+export const register = async (data: RegisterData): Promise<void> => {
   try {
     const response = await fetch(`${API_URL}/auth/register`, {
       method: 'POST',
       headers: {
-        'Accept': 'application/json',
+        'accept': 'application/json',
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
@@ -33,30 +33,27 @@ export const register = async (data: RegisterData): Promise<AuthResponse> => {
       throw new Error(errorData.detail || 'Erreur lors de l\'inscription');
     }
 
-    return await response.json();
+    const responseData = await response.json();
+    localStorage.setItem('token', responseData.access_token);
   } catch (error) {
-    console.error('Error registering user:', error);
+    console.error('Registration error:', error);
     throw error;
   }
 };
 
-export const login = async (data: LoginData): Promise<AuthResponse> => {
+export const login = async (email: string, password: string): Promise<void> => {
   try {
-    const formData = new URLSearchParams();
-    formData.append('grant_type', 'password');
-    formData.append('username', data.username);
-    formData.append('password', data.password);
-    formData.append('scope', '');
-    formData.append('client_id', 'string');
-    formData.append('client_secret', 'string');
+    const params = new URLSearchParams();
+    params.append('username', email);
+    params.append('password', password);
 
     const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
       headers: {
-        'Accept': 'application/json',
+        'accept': 'application/json',
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: formData.toString(),
+      body: params,
     });
 
     if (!response.ok) {
@@ -64,9 +61,14 @@ export const login = async (data: LoginData): Promise<AuthResponse> => {
       throw new Error(errorData.detail || 'Erreur lors de la connexion');
     }
 
-    return await response.json();
+    const data = await response.json();
+    localStorage.setItem('token', data.access_token);
   } catch (error) {
-    console.error('Error logging in:', error);
+    console.error('Login error:', error);
     throw error;
   }
+};
+
+export const logout = (): void => {
+  localStorage.removeItem('token');
 }; 
