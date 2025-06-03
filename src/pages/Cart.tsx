@@ -1,30 +1,60 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
+import { Minus, Plus, Trash2 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
-import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { createOrder } from "@/services/orderService";
+import { toast } from "@/components/ui/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 const Cart = () => {
-  const { cartItems, updateQuantity, removeFromCart, clearCart, getTotalPrice } = useCart();
+  const navigate = useNavigate();
+  const { cartItems, removeFromCart, updateQuantity, getTotalPrice, clearCart } = useCart();
+  const { isAuthenticated } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleCheckout = () => {
-    if (cartItems.length === 0) {
+  const handleCheckout = async () => {
+    if (!isAuthenticated) {
       toast({
-        title: "Panier vide",
-        description: "Veuillez ajouter des articles à votre panier avant de passer commande.",
+        title: "Connexion requise",
+        description: "Veuillez vous connecter pour passer commande.",
         variant: "destructive",
       });
+      navigate("/login");
       return;
     }
-    
-    toast({
-      title: "Commande Passée !",
-      description: "Votre commande a été soumise avec succès.",
-    });
-    clearCart();
+
+    try {
+      setIsLoading(true);
+      const orderData = {
+        status: "pending",
+        total_price: getTotalPrice(),
+        items: cartItems.map(item => ({
+          pizza_id: item.id,
+          quantity: item.quantity,
+          price: Number(item.price)
+        }))
+      };
+
+      await createOrder(orderData);
+      clearCart();
+      toast({
+        title: "Commande réussie",
+        description: "Votre commande a été enregistrée avec succès.",
+      });
+      navigate("/orders");
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: error instanceof Error ? error.message : "Une erreur est survenue lors de la commande",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (cartItems.length === 0) {
@@ -34,10 +64,9 @@ const Cart = () => {
         <div className="min-h-screen bg-gray-50 py-16">
           <div className="container mx-auto px-4">
             <div className="text-center">
-              <ShoppingBag className="h-16 w-16 mx-auto text-gray-400 mb-4" />
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Votre Panier est Vide</h2>
               <p className="text-gray-600 mb-8">
-                Ajoutez des articles à votre panier avant de passer à la caisse.
+                Ajoutez des pizzas à votre panier pour commencer votre commande.
               </p>
               <Link to="/menu">
                 <Button className="bg-red-600 hover:bg-red-700">
@@ -57,37 +86,37 @@ const Cart = () => {
       <Header />
       <div className="min-h-screen bg-gray-50 py-16">
         <div className="container mx-auto px-4">
-          <div className="mb-8">
-            <Link to="/" className="inline-flex items-center text-red-600 hover:text-red-700">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Retour à l'Accueil
-            </Link>
-          </div>
-
+          <h1 className="text-3xl font-bold text-gray-900 mb-8">Votre Panier</h1>
+          
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Cart Items */}
             <div className="lg:col-span-2">
               <Card>
                 <CardHeader>
-                  <CardTitle>Votre Panier</CardTitle>
+                  <CardTitle>Articles</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     {cartItems.map((item) => (
-                      <div key={item.id} className="flex items-center gap-4 py-4 border-b last:border-0">
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-20 h-20 object-cover rounded-lg"
-                        />
-                        <div className="flex-1">
-                          <h3 className="font-medium">{item.name}</h3>
-                          <p className="text-sm text-gray-500">{item.description}</p>
-                          <div className="flex items-center gap-2 mt-2">
+                      <div key={item.id} className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="w-20 h-20 object-cover rounded-lg"
+                          />
+                          <div>
+                            <h3 className="font-medium">{item.name}</h3>
+                            <p className="text-gray-500">{Number(item.price).toFixed(2)} €</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-4">
+                          <div className="flex items-center space-x-2">
                             <Button
                               variant="outline"
                               size="icon"
-                              onClick={() => updateQuantity(item.id, Math.max(0, item.quantity - 1))}
+                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                              disabled={item.quantity <= 1}
                             >
                               <Minus className="h-4 w-4" />
                             </Button>
@@ -100,16 +129,12 @@ const Cart = () => {
                               <Plus className="h-4 w-4" />
                             </Button>
                           </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-medium">{item.price}</p>
                           <Button
                             variant="ghost"
                             size="icon"
                             onClick={() => removeFromCart(item.id)}
-                            className="text-red-600 hover:text-red-700"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-4 w-4 text-red-600" />
                           </Button>
                         </div>
                       </div>
@@ -123,40 +148,30 @@ const Cart = () => {
             <div>
               <Card>
                 <CardHeader>
-                  <CardTitle>Récapitulatif de la Commande</CardTitle>
+                  <CardTitle>Récapitulatif</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div className="flex justify-between">
-                      <span>Sous-total</span>
-                      <span>{getTotalPrice().toFixed(2)} €</span>
+                      <span className="text-gray-600">Sous-total</span>
+                      <span className="font-medium">{getTotalPrice().toFixed(2)} €</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>TVA (20%)</span>
-                      <span>{(getTotalPrice() * 0.2).toFixed(2)} €</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Livraison</span>
-                      <span>2.99 €</span>
+                      <span className="text-gray-600">Livraison</span>
+                      <span className="font-medium">Gratuite</span>
                     </div>
                     <div className="border-t pt-4">
-                      <div className="flex justify-between font-bold">
-                        <span>Total</span>
-                        <span>{(getTotalPrice() * 1.2 + 2.99).toFixed(2)} €</span>
+                      <div className="flex justify-between">
+                        <span className="font-bold">Total</span>
+                        <span className="font-bold">{getTotalPrice().toFixed(2)} €</span>
                       </div>
                     </div>
-                    <Button 
-                      onClick={handleCheckout}
+                    <Button
                       className="w-full bg-red-600 hover:bg-red-700"
+                      onClick={handleCheckout}
+                      disabled={isLoading}
                     >
-                      Passer la Commande
-                    </Button>
-                    <Button 
-                      onClick={clearCart}
-                      variant="outline" 
-                      className="w-full"
-                    >
-                      Vider le Panier
+                      {isLoading ? "Traitement..." : "Commander"}
                     </Button>
                   </div>
                 </CardContent>
