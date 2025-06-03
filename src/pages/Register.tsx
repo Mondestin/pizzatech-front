@@ -1,0 +1,129 @@
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Pizza } from "lucide-react";
+
+const Register = () => {
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (formData.password !== formData.confirmPassword) {
+      alert("Les mots de passe ne correspondent pas !");
+      return;
+    }
+    // Handle registration logic here
+    console.log("Registration attempt:", formData);
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-orange-50 px-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <div className="flex items-center justify-center space-x-2 mb-4">
+            <Pizza className="h-8 w-8 text-red-600" />
+            <span className="text-2xl font-bold text-gray-900">Bella Pizza Paris</span>
+          </div>
+          <CardTitle className="text-2xl">Créer un Compte</CardTitle>
+          <CardDescription>Inscrivez-vous pour commencer à commander</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="firstName">Prénom</Label>
+                <Input
+                  id="firstName"
+                  name="firstName"
+                  placeholder="Jean"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Nom</Label>
+                <Input
+                  id="lastName"
+                  name="lastName"
+                  placeholder="Dupont"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="jean@exemple.com"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Mot de passe</Label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                placeholder="Créez un mot de passe"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
+              <Input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                placeholder="Confirmez votre mot de passe"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <Button type="submit" className="w-full bg-red-600 hover:bg-red-700">
+              Créer un Compte
+            </Button>
+          </form>
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              Vous avez déjà un compte ?{" "}
+              <Link to="/login" className="text-red-600 hover:text-red-700 font-medium">
+                Se connecter
+              </Link>
+            </p>
+            <Link to="/" className="text-sm text-gray-500 hover:text-gray-700 mt-2 block">
+              Retour à l'Accueil
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default Register;
