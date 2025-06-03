@@ -3,7 +3,9 @@ import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Calendar, MapPin, Clock } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, Clock, ShoppingBag } from "lucide-react";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 const PastOrders = () => {
   // Mock data for past orders
@@ -70,108 +72,121 @@ const PastOrders = () => {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm">
-        <div className="container mx-auto px-4 lg:px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center space-x-2 text-gray-700 hover:text-red-600">
-            <ArrowLeft className="h-5 w-5" />
-            <span>Retour à l'Accueil</span>
-          </Link>
-          <h1 className="text-2xl font-bold text-gray-900">Commandes Passées</h1>
-          <div></div>
+  if (orders.length === 0) {
+    return (
+      <>
+        <Header />
+        <div className="min-h-screen bg-gray-50 py-16">
+          <div className="container mx-auto px-4">
+            <div className="text-center">
+              <ShoppingBag className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Aucune Commande</h2>
+              <p className="text-gray-600 mb-8">
+                Vous n'avez pas encore passé de commande.
+              </p>
+              <Link to="/menu">
+                <Button className="bg-red-600 hover:bg-red-700">
+                  Voir le Menu
+                </Button>
+              </Link>
+            </div>
+          </div>
         </div>
-      </div>
+        <Footer />
+      </>
+    );
+  }
 
-      <div className="container mx-auto px-4 lg:px-6 py-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-6">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Historique des Commandes</h2>
-            <p className="text-gray-600">Consultez toutes vos commandes précédentes et commandez à nouveau vos favoris</p>
+  return (
+    <>
+      <Header />
+      <div className="min-h-screen bg-gray-50 py-16">
+        <div className="container mx-auto px-4">
+          <div className="mb-8">
+            <Link to="/" className="inline-flex items-center text-red-600 hover:text-red-700">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Retour à l'Accueil
+            </Link>
           </div>
 
-          {orders.length === 0 ? (
-            <Card>
-              <CardContent className="text-center py-12">
-                <p className="text-gray-500 mb-4">Vous n'avez pas encore passé de commande.</p>
-                <Link to="/menu">
-                  <Button className="bg-red-600 hover:bg-red-700">
-                    Voir le Menu
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-6">
-              {orders.map((order) => (
-                <Card key={order.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                      <div>
-                        <CardTitle className="text-lg">Commande #{order.id}</CardTitle>
-                        <div className="flex items-center space-x-4 text-sm text-gray-600 mt-2">
-                          <div className="flex items-center space-x-1">
-                            <Calendar className="h-4 w-4" />
-                            <span>{order.date}</span>
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            <Clock className="h-4 w-4" />
-                            <span>{order.time}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-4">
-                        <Badge className={getStatusColor(order.status)}>
-                          {order.status}
-                        </Badge>
-                        <span className="text-xl font-bold text-red-600">
-                          {order.total.toFixed(2)} €
-                        </span>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="flex items-start space-x-2">
-                        <MapPin className="h-4 w-4 text-gray-500 mt-0.5" />
-                        <span className="text-sm text-gray-600">{order.deliveryAddress}</span>
-                      </div>
-                      
-                      <div>
-                        <h4 className="font-medium mb-2">Articles Commandés :</h4>
-                        <div className="space-y-2">
-                          {order.items.map((item, index) => (
-                            <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
-                              <div>
-                                <span className="font-medium">{item.name}</span>
-                                <span className="text-gray-600 ml-2">x{item.quantity}</span>
-                              </div>
-                              <span className="font-medium">{(item.price * item.quantity).toFixed(2)} €</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
+          <div className="text-center mb-16">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              Historique des Commandes
+            </h1>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Consultez l'historique de vos commandes passées et leur statut.
+            </p>
+          </div>
 
-                      <div className="flex flex-col sm:flex-row gap-2 pt-4">
-                        <Button variant="outline" className="flex-1">
-                          Voir les Détails
-                        </Button>
-                        {order.status === "Livrée" && (
-                          <Button className="flex-1 bg-red-600 hover:bg-red-700">
-                            Commander à Nouveau
-                          </Button>
-                        )}
+          <div className="space-y-6">
+            {orders.map((order) => (
+              <Card key={order.id} className="hover:shadow-md transition-shadow">
+                <CardHeader>
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                      <CardTitle className="text-lg">Commande #{order.id}</CardTitle>
+                      <div className="flex items-center space-x-4 text-sm text-gray-600 mt-2">
+                        <div className="flex items-center space-x-1">
+                          <Calendar className="h-4 w-4" />
+                          <span>{order.date}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <Clock className="h-4 w-4" />
+                          <span>{order.time}</span>
+                        </div>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+                    <div className="flex items-center space-x-4">
+                      <Badge className={getStatusColor(order.status)}>
+                        {order.status}
+                      </Badge>
+                      <span className="text-xl font-bold text-red-600">
+                        {order.total.toFixed(2)} €
+                      </span>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-start space-x-2">
+                      <MapPin className="h-4 w-4 text-gray-500 mt-0.5" />
+                      <span className="text-sm text-gray-600">{order.deliveryAddress}</span>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-medium mb-2">Articles Commandés :</h4>
+                      <div className="space-y-2">
+                        {order.items.map((item, index) => (
+                          <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
+                            <div>
+                              <span className="font-medium">{item.name}</span>
+                              <span className="text-gray-600 ml-2">x{item.quantity}</span>
+                            </div>
+                            <span className="font-medium">{(item.price * item.quantity).toFixed(2)} €</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-2 pt-4">
+                      <Button variant="outline" className="flex-1">
+                        Voir les Détails
+                      </Button>
+                      {order.status === "Livrée" && (
+                        <Button className="flex-1 bg-red-600 hover:bg-red-700">
+                          Commander à Nouveau
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+      <Footer />
+    </>
   );
 };
 
