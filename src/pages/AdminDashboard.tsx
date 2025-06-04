@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Pizza, Users, DollarSign, ShoppingCart, Settings, LogOut, Loader2, Plus, Edit2, Trash2 } from "lucide-react";
 import { getUsers, getOrders, updateOrderStatus, getPizzas, createPizza, updatePizza, deletePizza, AdminUser, AdminOrder, AdminPizza } from "@/services/adminService";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import ConfirmDialog from "@/components/ConfirmDialog";
 
 const AdminDashboard = () => {
@@ -180,8 +180,16 @@ const AdminDashboard = () => {
             <span className="text-2xl font-bold text-gray-900">Bella Pizza Paris Admin</span>
           </div>
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon" onClick={handleLogout}>
-              <LogOut className="h-5 w-5" />
+            <Link to="/">
+              <Button variant="outline" className="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Retour à l'accueil
+              </Button>
+            </Link>
+            <Button onClick={handleLogout} variant="destructive">
+              Déconnexion
             </Button>
           </div>
         </div>
@@ -342,23 +350,104 @@ const AdminDashboard = () => {
               <Card>
                 <CardHeader>
                   <CardTitle>Liste des Clients</CardTitle>
+                  <CardDescription>Gérez vos clients et leurs informations</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     {users.map((user) => (
-                      <div key={user.id} className="border rounded-lg p-4">
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <p className="font-medium">{user.full_name}</p>
-                            <p className="text-sm text-gray-600">{user.email}</p>
+                      <div key={user.id} className="border rounded-lg p-6 bg-white hover:shadow-md transition-shadow">
+                        <div className="flex justify-between items-start">
+                          <div className="space-y-4">
+                            <div>
+                              <h3 className="text-xl font-semibold">{user.full_name}</h3>
+                              <p className="text-gray-600">{user.email}</p>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <p className="text-sm text-gray-500">ID Client</p>
+                                <p className="font-medium">#{user.id}</p>
+                              </div>
+                              <div>
+                                <p className="text-sm text-gray-500">Date d'inscription</p>
+                                <p className="font-medium">
+                                  {new Date(user.created_at).toLocaleDateString('fr-FR', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                  })}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="flex flex-wrap gap-2">
+                              {user.is_admin && (
+                                <Badge className="bg-purple-100 text-purple-800 px-3 py-1">
+                                  <Settings className="h-3 w-3 mr-1" />
+                                  Administrateur
+                                </Badge>
+                              )}
+                              <Badge className={`px-3 py-1 ${user.is_active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                                {user.is_active ? (
+                                  <>
+                                    <svg className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Actif
+                                  </>
+                                ) : (
+                                  <>
+                                    <svg className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                    Inactif
+                                  </>
+                                )}
+                              </Badge>
+                            </div>
                           </div>
-                          <div className="flex items-center space-x-2">
-                            {user.is_admin && (
-                              <Badge className="bg-purple-100 text-purple-800">Admin</Badge>
-                            )}
-                            <Badge className={user.is_active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
-                              {user.is_active ? "Actif" : "Inactif"}
-                            </Badge>
+
+                          <div className="flex flex-col items-end space-y-4">
+                            <div className="text-right">
+                              <p className="text-sm text-gray-500">Commandes</p>
+                              <p className="text-xl font-bold">
+                                {orders.filter(order => order.user_id === user.id).length}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm text-gray-500">Total dépensé</p>
+                              <p className="text-xl font-bold text-green-600">
+                                {orders
+                                  .filter(order => order.user_id === user.id)
+                                  .reduce((sum, order) => sum + order.total_price, 0)
+                                  .toFixed(2)} €
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Recent Orders Preview */}
+                        <div className="mt-6 pt-6 border-t">
+                          <h4 className="text-sm font-medium text-gray-500 mb-3">Commandes récentes</h4>
+                          <div className="space-y-2">
+                            {orders
+                              .filter(order => order.user_id === user.id)
+                              .slice(0, 3)
+                              .map(order => (
+                                <div key={order.id} className="flex justify-between items-center text-sm">
+                                  <div className="flex items-center space-x-2">
+                                    <ShoppingCart className="h-4 w-4 text-gray-400" />
+                                    <span>Commande #{order.id}</span>
+                                  </div>
+                                  <div className="flex items-center space-x-4">
+                                    <Badge className={getStatusColor(order.status)}>
+                                      {order.status}
+                                    </Badge>
+                                    <span className="text-gray-600">{order.total_price.toFixed(2)} €</span>
+                                    <span className="text-gray-500">{formatDate(order.order_date)}</span>
+                                  </div>
+                                </div>
+                              ))}
                           </div>
                         </div>
                       </div>
