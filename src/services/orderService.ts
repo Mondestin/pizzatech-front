@@ -1,5 +1,5 @@
 // Service for handling order-related API calls
-const API_URL = 'http://localhost:8000';
+const API_URL = 'https://pizzatech-back-production.up.railway.app';
 
 export interface CreateOrderItem {
   pizza_id: number;

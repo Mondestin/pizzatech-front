@@ -1,5 +1,5 @@
 // Service for handling admin-related API calls
-const API_URL = 'http://localhost:8000';
+const API_URL = 'https://pizzatech-back-production.up.railway.app';
 
 export interface AdminUser {
   id: number;
