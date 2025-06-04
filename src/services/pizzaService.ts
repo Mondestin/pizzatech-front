@@ -1,5 +1,5 @@
 // Service for handling pizza-related API calls
-const API_URL = 'http://localhost:8000';
+const API_URL = 'https://pizza-management-api-production.up.railway.app/api/v1';
 
 export interface Topping {
   id: number;

@@ -1,5 +1,13 @@
 // Service for handling admin-related API calls
-const API_URL = 'https://pizzatech-back-production.up.railway.app';
+const API_URL = 'https://pizza-management-api-production.up.railway.app/api/v1';
+
+const defaultHeaders = {
+  'Accept': 'application/json',
+  'Content-Type': 'application/json',
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
 
 export interface AdminUser {
   id: number;
@@ -54,7 +62,7 @@ export const getUsers = async (): Promise<AdminUser[]> => {
 
     const response = await fetch(`${API_URL}/users/all`, {
       headers: {
-        'Accept': 'application/json',
+        ...defaultHeaders,
         'Authorization': `Bearer ${token}`
       },
     });
@@ -80,7 +88,7 @@ export const getOrders = async (): Promise<AdminOrder[]> => {
 
     const response = await fetch(`${API_URL}/orders/?skip=0&limit=100`, {
       headers: {
-        'Accept': 'application/json',
+        ...defaultHeaders,
         'Authorization': `Bearer ${token}`
       },
     });
@@ -107,8 +115,7 @@ export const updateOrderStatus = async (orderId: number, status: string): Promis
     const response = await fetch(`${API_URL}/orders/${orderId}`, {
       method: 'PATCH',
       headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
+        ...defaultHeaders,
         'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify({ status }),
@@ -135,7 +142,7 @@ export const getPizzas = async (): Promise<AdminPizza[]> => {
 
     const response = await fetch(`${API_URL}/pizzas`, {
       headers: {
-        'Accept': 'application/json',
+        ...defaultHeaders,
         'Authorization': `Bearer ${token}`
       },
     });
@@ -162,8 +169,7 @@ export const createPizza = async (pizzaData: Omit<AdminPizza, 'id'>): Promise<Ad
     const response = await fetch(`${API_URL}/pizzas`, {
       method: 'POST',
       headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
+        ...defaultHeaders,
         'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify(pizzaData),
@@ -191,8 +197,7 @@ export const updatePizza = async (pizzaId: number, pizzaData: Partial<AdminPizza
     const response = await fetch(`${API_URL}/pizzas/${pizzaId}`, {
       method: 'PATCH',
       headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
+        ...defaultHeaders,
         'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify(pizzaData),
@@ -220,7 +225,7 @@ export const deletePizza = async (pizzaId: number): Promise<void> => {
     const response = await fetch(`${API_URL}/pizzas/${pizzaId}`, {
       method: 'DELETE',
       headers: {
-        'Accept': 'application/json',
+        ...defaultHeaders,
         'Authorization': `Bearer ${token}`
       },
     });

@@ -1,5 +1,13 @@
 // Service for handling authentication-related API calls
-const API_URL = 'https://pizzatech-back-production.up.railway.app';
+const API_URL = 'https://pizza-management-api-production.up.railway.app/api/v1';
+
+const defaultHeaders = {
+  'Accept': 'application/json',
+  'Content-Type': 'application/json',
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
 
 export interface RegisterData {
   email: string;
@@ -21,10 +29,7 @@ export const register = async (data: RegisterData): Promise<void> => {
   try {
     const response = await fetch(`${API_URL}/auth/register`, {
       method: 'POST',
-      headers: {
-        'accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
+      headers: defaultHeaders,
       body: JSON.stringify(data),
     });
 
@@ -50,7 +55,7 @@ export const login = async (email: string, password: string): Promise<void> => {
     const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
       headers: {
-        'accept': 'application/json',
+        ...defaultHeaders,
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: params,

@@ -1,5 +1,13 @@
 // Service for handling order-related API calls
-const API_URL = 'https://pizzatech-back-production.up.railway.app';
+const API_URL = 'https://pizza-management-api-production.up.railway.app/api/v1';
+
+const defaultHeaders = {
+  'Accept': 'application/json',
+  'Content-Type': 'application/json',
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
 
 export interface CreateOrderItem {
   pizza_id: number;
@@ -64,8 +72,7 @@ export const createOrder = async (data: CreateOrderData): Promise<Order> => {
     const response = await fetch(`${API_URL}/orders`, {
       method: 'POST',
       headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
+        ...defaultHeaders,
         'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify(data),
@@ -98,10 +105,8 @@ export const getOrders = async (): Promise<Order[]> => {
     }
 
     const response = await fetch(`${API_URL}/orders/?skip=0&limit=100`, {
-      method: 'GET',
       headers: {
-        'accept': 'application/json',
-        'Content-Type': 'application/json',
+        ...defaultHeaders,
         'Authorization': `Bearer ${token}`
       },
     });

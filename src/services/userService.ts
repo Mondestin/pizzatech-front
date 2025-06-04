@@ -1,4 +1,12 @@
-const API_URL = 'https://pizzatech-back-production.up.railway.app';
+const API_URL = 'https://pizza-management-api-production.up.railway.app/api/v1';
+
+const defaultHeaders = {
+  'Accept': 'application/json',
+  'Content-Type': 'application/json',
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
 
 export interface UserData {
   id: number;
@@ -16,17 +24,15 @@ export const getUserProfile = async (): Promise<UserData> => {
     }
 
     const response = await fetch(`${API_URL}/users/me`, {
-      method: 'GET',
       headers: {
-        'accept': 'application/json',
-        'Content-Type': 'application/json',
+        ...defaultHeaders,
         'Authorization': `Bearer ${token}`
       },
     });
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.detail || 'Erreur lors de la récupération du profil');
+      throw new Error(errorData.detail || 'Error fetching user profile');
     }
 
     return await response.json();
