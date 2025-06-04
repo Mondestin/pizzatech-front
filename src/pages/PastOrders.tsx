@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, User, Mail, MapPin, Phone, Loader2, Package, Clock, CheckCircle, XCircle } from "lucide-react";
+import { ArrowLeft, User, Mail, MapPin, Phone, Loader2, Package, Clock, CheckCircle, XCircle, Shield } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getUserProfile, UserData } from "@/services/userService";
 import { getOrders, Order } from "@/services/orderService";
@@ -52,7 +52,7 @@ const PastOrders = () => {
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case "completed":
+      case "ready":
         return "bg-green-100 text-green-800";
       case "pending":
         return "bg-yellow-100 text-yellow-800";
@@ -65,7 +65,7 @@ const PastOrders = () => {
 
   const getStatusIcon = (status: string) => {
     switch (status.toLowerCase()) {
-      case "completed":
+      case "ready":
         return <CheckCircle className="h-4 w-4" />;
       case "pending":
         return <Clock className="h-4 w-4" />;
@@ -151,52 +151,94 @@ const PastOrders = () => {
             </Link>
           </div>
 
-          <div className="space-y-6">
-            {orders.map((order) => (
-              <Card key={order.id}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-lg font-semibold">
-                    Commande #{order.id}
-                  </CardTitle>
-                  <Badge className={`flex items-center gap-1 ${getStatusColor(order.status)}`}>
-                    {getStatusIcon(order.status)}
-                    {order.status}
-                  </Badge>
+          <div className="grid lg:grid-cols-3 gap-8">
+            {/* User Profile Section */}
+            <div className="lg:col-span-1">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-xl font-bold">Profil Utilisateur</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex justify-between text-sm text-gray-500">
-                      <span>Date de commande</span>
-                      <span>{formatDate(order.created_at)}</span>
-                    </div>
-                    
-                    <div className="border-t pt-4">
-                      <h3 className="font-medium mb-3">Articles</h3>
-                      <div className="space-y-3">
-                        {order.items.map((item, index) => (
-                          <div key={index} className="flex justify-between items-center">
-                            <div>
-                              <p className="font-medium">{item.pizza_name}</p>
-                              <p className="text-sm text-gray-500">
-                                {item.quantity} x {item.unit_price.toFixed(2)} €
-                              </p>
-                            </div>
-                            <p className="font-medium">{item.subtotal.toFixed(2)} €</p>
-                          </div>
-                        ))}
+                  {userData && (
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                        <User className="h-5 w-5 text-red-600" />
+                        <div>
+                          <p className="font-medium">{userData.first_name} {userData.last_name}</p>
+                          <p className="text-sm text-gray-500">ID: {userData.id}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                        <Mail className="h-5 w-5 text-red-600" />
+                        <span className="text-gray-900">{userData.email}</span>
+                      </div>
+                      <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                        <Shield className="h-5 w-5 text-red-600" />
+                        <div>
+                          <p className="text-gray-900">
+                            {userData.is_superuser ? "Administrateur" : "Utilisateur"}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {userData.is_active ? "Compte actif" : "Compte inactif"}
+                          </p>
+                        </div>
                       </div>
                     </div>
-
-                    <div className="border-t pt-4">
-                      <div className="flex justify-between items-center">
-                        <span className="font-semibold">Total</span>
-                        <span className="text-xl font-bold">{order.total_price.toFixed(2)} €</span>
-                      </div>
-                    </div>
-                  </div>
+                  )}
                 </CardContent>
               </Card>
-            ))}
+            </div>
+
+            {/* Orders Section */}
+            <div className="lg:col-span-2">
+              <div className="space-y-6">
+                {orders.map((order) => (
+                  <Card key={order.id}>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-lg font-semibold">
+                        Commande #{order.id}
+                      </CardTitle>
+                      <Badge className={`flex items-center gap-1 ${getStatusColor(order.status)}`}>
+                        {getStatusIcon(order.status)}
+                        {order.status}
+                      </Badge>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex justify-between text-sm text-gray-500">
+                          <span>Date de commande</span>
+                          <span>{formatDate(order.created_at)}</span>
+                        </div>
+                        
+                        <div className="border-t pt-4">
+                          <h3 className="font-medium mb-3">Articles</h3>
+                          <div className="space-y-3">
+                            {order.items.map((item, index) => (
+                              <div key={index} className="flex justify-between items-center">
+                                <div>
+                                  <p className="font-medium">{item.pizza_name}</p>
+                                  <p className="text-sm text-gray-500">
+                                    {item.quantity} x {item.unit_price.toFixed(2)} €
+                                  </p>
+                                </div>
+                                <p className="font-medium">{item.subtotal.toFixed(2)} €</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="border-t pt-4">
+                          <div className="flex justify-between items-center">
+                            <span className="font-semibold">Total</span>
+                            <span className="text-xl font-bold">{order.total_price.toFixed(2)} €</span>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>

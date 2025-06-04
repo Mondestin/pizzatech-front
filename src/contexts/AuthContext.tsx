@@ -1,48 +1,60 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { login as loginService, register as registerService, logout as logoutService } from '@/services/authService';
+import { login as loginService, register as registerService, logout as logoutService, RegisterData } from '@/services/authService';
+import { getUserProfile, UserData } from '@/services/userService';
 import { toast } from '@/hooks/use-toast';
 
-interface AuthContextType {
+export interface AuthContextType {
   isAuthenticated: boolean;
+  userData: UserData | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, full_name: string, password: string) => Promise<void>;
+  register: (data: Omit<RegisterData, 'is_active' | 'is_superuser'>) => Promise<void>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userData, setUserData] = useState<UserData | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    setIsAuthenticated(!!token);
+    if (token) {
+      setIsAuthenticated(true);
+      fetchUserData();
+    }
   }, []);
+
+  const fetchUserData = async () => {
+    try {
+      const data = await getUserProfile();
+      setUserData(data);
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      logout();
+    }
+  };
 
   const login = async (email: string, password: string) => {
     await loginService(email, password);
     setIsAuthenticated(true);
+    await fetchUserData();
   };
 
-  const register = async (email: string, full_name: string, password: string) => {
-    const [first_name, last_name] = full_name.split(' ');
-    await registerService({ 
-      email, 
-      username: email,
-      first_name: first_name || '',
-      last_name: last_name || '',
-      password 
-    });
+  const register = async (data: Omit<RegisterData, 'is_active' | 'is_superuser'>) => {
+    await registerService(data);
     setIsAuthenticated(true);
+    await fetchUserData();
   };
 
   const logout = () => {
-    logoutService();
+    localStorage.removeItem('token');
     setIsAuthenticated(false);
+    setUserData(null);
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, register, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, userData, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );
