@@ -8,7 +8,11 @@ const defaultHeaders = {
 
 export interface RegisterData {
   email: string;
-  full_name: string;
+  username: string;
+  is_active: boolean;
+  is_superuser: boolean;
+  first_name: string;
+  last_name: string;
   password: string;
 }
 
@@ -22,12 +26,18 @@ export interface AuthResponse {
   token_type: string;
 }
 
-export const register = async (data: RegisterData): Promise<void> => {
+export const register = async (data: Omit<RegisterData, 'is_active' | 'is_superuser'>): Promise<void> => {
   try {
-    const response = await fetch(`${API_URL}/auth/register`, {
+    const payload = {
+      ...data,
+      is_active: true,
+      is_superuser: false
+    };
+
+    const response = await fetch(`${API_URL}/users/register`, {
       method: 'POST',
       headers: defaultHeaders,
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
