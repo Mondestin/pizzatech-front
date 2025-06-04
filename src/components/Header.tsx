@@ -71,7 +71,7 @@ const Header = () => {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="flex items-center gap-2">
                     <User className="h-5 w-5" />
-                    <span className="hidden sm:inline-block">{userData?.full_name}</span>
+                    <span className="hidden sm:inline-block">{userData ? `${userData.first_name} ${userData.last_name}` : ''}</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">

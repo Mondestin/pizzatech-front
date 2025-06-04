@@ -12,6 +12,7 @@ export interface AdminUser {
   full_name: string;
   is_active: boolean;
   is_admin: boolean;
+  created_at: string;
 }
 
 export interface AdminOrder {
@@ -42,6 +43,15 @@ export interface PizzaTopping {
 }
 
 export interface AdminPizza {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  image_url: string;
+  toppings: PizzaTopping[];
+}
+
+export interface Pizza {
   id: number;
   name: string;
   description: string;
@@ -110,7 +120,7 @@ export const updateOrderStatus = async (orderId: number, status: string): Promis
     }
 
     const response = await fetch(`${API_URL}/orders/${orderId}`, {
-      method: 'PATCH',
+      method: 'PUT',
       headers: {
         ...defaultHeaders,
         'Authorization': `Bearer ${token}`
@@ -163,7 +173,7 @@ export const createPizza = async (pizzaData: Omit<AdminPizza, 'id'>): Promise<Ad
       throw new Error('No authentication token found');
     }
 
-    const response = await fetch(`${API_URL}/pizzas`, {
+    const response = await fetch(`${API_URL}/pizzas/`, {
       method: 'POST',
       headers: {
         ...defaultHeaders,
@@ -192,7 +202,7 @@ export const updatePizza = async (pizzaId: number, pizzaData: Partial<AdminPizza
     }
 
     const response = await fetch(`${API_URL}/pizzas/${pizzaId}`, {
-      method: 'PATCH',
+      method: 'PUT',
       headers: {
         ...defaultHeaders,
         'Authorization': `Bearer ${token}`

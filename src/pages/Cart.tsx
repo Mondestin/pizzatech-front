@@ -2,10 +2,11 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Minus, Plus, Trash2 } from "lucide-react";
+import { Minus, Plus, Trash2, Loader2 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { createOrder } from "@/services/orderService";
+import { getUserProfile } from "@/services/userService";
 import { toast } from "@/components/ui/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -15,6 +16,7 @@ const Cart = () => {
   const { cartItems, removeFromCart, updateQuantity, getTotalPrice, clearCart } = useCart();
   const { isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleCheckout = async () => {
     if (!isAuthenticated) {
@@ -29,42 +31,23 @@ const Cart = () => {
 
     try {
       setIsLoading(true);
-      console.log('Starting checkout process with cart items:', cartItems);
-
+      const user = await getUserProfile();
+      
+      // Create order with the new payload structure
       const orderData = {
-        status: "pending",
-        total_price: getTotalPrice(),
-        order_date: new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Paris' }),
+        user_id: user.id,
         items: cartItems.map(item => ({
           pizza_id: item.id,
-          quantity: item.quantity,
-          price: Number(item.price)
+          quantity: item.quantity
         }))
       };
 
-      console.log('Prepared order data:', {
-        status: orderData.status,
-        total_price: orderData.total_price,
-        items_count: orderData.items.length,
-        items: orderData.items
-      });
-
-      const order = await createOrder(orderData);
-      console.log('Order created:', order);
-
+      await createOrder(orderData);
       clearCart();
-      toast({
-        title: "Commande réussie",
-        description: "Votre commande a été enregistrée avec succès.",
-      });
-      navigate("/orders");
+      navigate('/orders');
     } catch (error) {
-      console.error('Checkout failed:', error);
-      toast({
-        title: "Erreur",
-        description: error instanceof Error ? error.message : "Une erreur est survenue lors de la commande",
-        variant: "destructive",
-      });
+      console.error('Error creating order:', error);
+      setError('Une erreur est survenue lors de la création de la commande');
     } finally {
       setIsLoading(false);
     }
@@ -184,7 +167,7 @@ const Cart = () => {
                       onClick={handleCheckout}
                       disabled={isLoading}
                     >
-                      {isLoading ? "Traitement..." : "Commander"}
+                      {isLoading ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : "Commander"}
                     </Button>
                   </div>
                 </CardContent>
