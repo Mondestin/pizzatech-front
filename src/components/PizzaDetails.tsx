@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,7 +26,11 @@ const PizzaDetails = ({ pizza, onClose }: PizzaDetailsProps) => {
   const { addToCart } = useCart();
 
   const handleAddToCart = () => {
-    addToCart(pizza);
+    addToCart({ 
+      ...pizza, 
+      quantity: 1,
+      price: Number(pizza.price.replace('€', '').trim())
+    });
     toast({
       title: "Added to Cart",
       description: `${pizza.name} has been added to your cart.`,

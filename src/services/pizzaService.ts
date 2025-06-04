@@ -1,6 +1,11 @@
 // Service for handling pizza-related API calls
 const API_URL = 'https://pizza-management-api-production.up.railway.app/api/v1';
 
+const defaultHeaders = {
+  'Accept': 'application/json',
+  'Content-Type': 'application/json'
+};
+
 export interface Topping {
   id: number;
   name: string;
@@ -20,17 +25,12 @@ export const getPizzas = async (skip: number = 0, limit: number = 100): Promise<
   try {
     const response = await fetch(`${API_URL}/pizzas/?skip=${skip}&limit=${limit}`, {
       method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include', // Include credentials if needed
+      headers: defaultHeaders
     });
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch pizzas');
-    }
-    return await response.json();
+
+    const data = await response.json();
+    console.log('Pizzas API Response:', data);
+    return data;
   } catch (error) {
     console.error('Error fetching pizzas:', error);
     throw error;

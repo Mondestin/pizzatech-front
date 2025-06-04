@@ -1,11 +1,8 @@
 const API_URL = 'https://pizza-management-api-production.up.railway.app/api/v1';
 
 const defaultHeaders = {
-  'Accept': 'application/json',
-  'Content-Type': 'application/json',
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+   'Accept': 'application/json',
+  'Content-Type': 'application/json'
 };
 
 export interface UserData {

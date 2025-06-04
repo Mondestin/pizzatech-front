@@ -134,7 +134,7 @@ const Menu = () => {
                         </DialogDescription>
                       </DialogHeader>
                       <div className="grid grid-cols-2 gap-2">
-                        {pizza.toppings.map((topping) => (
+                        {pizza.toppings?.map((topping) => (
                           <div key={topping.id} className="flex justify-between items-center p-2 bg-gray-50 rounded">
                             <span>{topping.name}</span>
                             <span className="text-sm text-gray-500">+{topping.price.toFixed(2)} €</span>
