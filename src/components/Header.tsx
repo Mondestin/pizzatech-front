@@ -2,14 +2,37 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, Pizza, ShoppingCart, LogOut } from "lucide-react";
+import { Menu, Pizza, ShoppingCart, LogOut, User, Package } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { getUserProfile, UserData } from "@/services/userService";
+import { useEffect } from "react";
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { getItemCount } = useCart();
   const { isAuthenticated, logout } = useAuth();
+  const [userData, setUserData] = useState<UserData | null>(null);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (isAuthenticated) {
+        try {
+          const data = await getUserProfile();
+          setUserData(data);
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+        }
+      }
+    };
+    fetchUserData();
+  }, [isAuthenticated]);
 
   // Navigation items in French
   const navItems = [
@@ -21,51 +44,63 @@ const Header = () => {
 
   return (
     <header className="fixed top-0 w-full bg-white/95 backdrop-blur-sm shadow-sm z-50">
-      <div className="container mx-auto px-4 lg:px-6 h-16 flex items-center justify-between">
-        {/* Logo */}
-        <Link to="/" className="flex items-center space-x-2">
-          <Pizza className="h-8 w-8 text-red-600" />
-          <span className="text-2xl font-bold text-gray-900">Bella Pizza Paris</span>
-        </Link>
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
+          <Link to="/" className="flex items-center space-x-2">
+            <Pizza className="h-6 w-6 text-red-600" />
+            <span className="text-xl font-bold">PizzaTech</span>
+          </Link>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-8">
-          {navItems.map((item) => (
-            <Link
-              key={item.name}
-              to={item.href}
-              className="text-gray-700 hover:text-red-600 transition-colors font-medium"
-            >
-              {item.name}
-            </Link>
-          ))}
-          <div className="flex items-center space-x-4">
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-8">
+            {navItems.map((item) => (
+              <Link
+                key={item.name}
+                to={item.href}
+                className="text-gray-600 hover:text-red-600 transition-colors"
+              >
+                {item.name}
+              </Link>
+            ))}
+          </nav>
+
+          {/* Desktop Actions */}
+          <div className="hidden md:flex items-center space-x-4">
             {isAuthenticated ? (
-              <>
-                <Link to="/orders" className="text-gray-700 hover:text-red-600">
-                  Mes Commandes
-                </Link>
-                <Button
-                  variant="ghost"
-                  onClick={logout}
-                  className="text-gray-700 hover:text-red-600"
-                >
-                  <LogOut className="h-5 w-5 mr-2" />
-                  Déconnexion
-                </Button>
-              </>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <User className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {userData?.is_superuser && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin" className="flex items-center">
+                        <Package className="h-4 w-4 mr-2" />
+                        Admin Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem asChild>
+                    <Link to="/orders" className="flex items-center">
+                      <Package className="h-4 w-4 mr-2" />
+                      Mes Commandes
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={logout} className="text-red-600">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Déconnexion
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
-              <>
-                <Link to="/login" className="text-gray-700 hover:text-red-600">
-                  Connexion
-                </Link>
-                <Link to="/register" className="text-gray-700 hover:text-red-600">
-                  Inscription
-                </Link>
-              </>
+              <Link to="/login">
+                <Button variant="ghost">Connexion</Button>
+              </Link>
             )}
             <Link to="/cart">
-              <Button variant="ghost" className="text-gray-700 hover:text-red-600 relative">
+              <Button variant="ghost" size="icon" className="relative">
                 <ShoppingCart className="h-5 w-5" />
                 {getItemCount() > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
@@ -75,73 +110,67 @@ const Header = () => {
               </Button>
             </Link>
           </div>
-        </nav>
 
-        {/* Mobile Navigation */}
-        <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetTrigger asChild className="md:hidden">
-            <Button variant="ghost" size="icon">
-              <Menu className="h-6 w-6" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="right" className="w-[300px]">
-            <div className="flex flex-col space-y-6 mt-8">
-              {navItems.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className="text-lg font-medium text-gray-700 hover:text-red-600 transition-colors"
-                  onClick={() => setIsOpen(false)}
-                >
-                  {item.name}
-                </Link>
-              ))}
-              <div className="flex flex-col space-y-4">
+          {/* Mobile Menu Button */}
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="md:hidden">
+                <Menu className="h-6 w-6" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent>
+              <nav className="flex flex-col space-y-4 mt-8">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    className="text-gray-600 hover:text-red-600 transition-colors"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    {item.name}
+                  </Link>
+                ))}
                 {isAuthenticated ? (
                   <>
-                    <Link to="/orders" onClick={() => setIsOpen(false)}>
-                      <Button variant="ghost" className="w-full text-gray-700 hover:text-red-600 justify-start">
-                        Mes Commandes
-                      </Button>
-                    </Link>
-                    <Button
-                      variant="ghost"
-                      onClick={logout}
-                      className="w-full text-gray-700 hover:text-red-600 justify-start"
+                    {userData?.is_superuser && (
+                      <Link
+                        to="/admin"
+                        className="text-gray-600 hover:text-red-600 transition-colors"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        Admin Dashboard
+                      </Link>
+                    )}
+                    <Link
+                      to="/orders"
+                      className="text-gray-600 hover:text-red-600 transition-colors"
+                      onClick={() => setIsOpen(false)}
                     >
-                      <LogOut className="h-5 w-5 mr-2" />
+                      Mes Commandes
+                    </Link>
+                    <button
+                      onClick={() => {
+                        logout();
+                        setIsOpen(false);
+                      }}
+                      className="text-red-600 hover:text-red-700 transition-colors"
+                    >
                       Déconnexion
-                    </Button>
+                    </button>
                   </>
                 ) : (
-                  <>
-                    <Link to="/login" onClick={() => setIsOpen(false)}>
-                      <Button variant="ghost" className="w-full text-gray-700 hover:text-red-600">
-                        Connexion
-                      </Button>
-                    </Link>
-                    <Link to="/register" onClick={() => setIsOpen(false)}>
-                      <Button className="bg-red-600 hover:bg-red-700 w-full">
-                        Inscription
-                      </Button>
-                    </Link>
-                  </>
+                  <Link
+                    to="/login"
+                    className="text-gray-600 hover:text-red-600 transition-colors"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Connexion
+                  </Link>
                 )}
-                <Link to="/cart" onClick={() => setIsOpen(false)}>
-                  <Button variant="ghost" className="w-full text-gray-700 hover:text-red-600 justify-start relative">
-                    <ShoppingCart className="h-5 w-5 mr-2" />
-                    Panier
-                    {getItemCount() > 0 && (
-                      <span className="ml-2 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                        {getItemCount()}
-                      </span>
-                    )}
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </SheetContent>
-        </Sheet>
+              </nav>
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
     </header>
   );

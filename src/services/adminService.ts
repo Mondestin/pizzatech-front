@@ -57,7 +57,7 @@ export const getUsers = async (): Promise<AdminUser[]> => {
       throw new Error('No authentication token found');
     }
 
-    const response = await fetch(`${API_URL}/users/all`, {
+    const response = await fetch(`${API_URL}/users/`, {
       headers: {
         ...defaultHeaders,
         'Authorization': `Bearer ${token}`
@@ -137,7 +137,7 @@ export const getPizzas = async (): Promise<AdminPizza[]> => {
       throw new Error('No authentication token found');
     }
 
-    const response = await fetch(`${API_URL}/pizzas`, {
+    const response = await fetch(`${API_URL}/pizzas/`, {
       headers: {
         ...defaultHeaders,
         'Authorization': `Bearer ${token}`
